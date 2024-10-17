@@ -1,44 +1,86 @@
-import numpy as np
-import matplotlib.pyplot as plt
+import importlib.util
+import sys
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
-data = pd.read_csv('large.csv', delimiter=";")
-X = data['X'].astype(float).values.reshape(-1, 1)
-y = data['Y'].astype(float).values
+# Charger dynamiquement le module test1.py
+path_to_test1 = r'C:\Users\HP\Desktop\prj\test1.py'
+spec = importlib.util.spec_from_file_location("test1", path_to_test1)
+test1 = importlib.util.module_from_spec(spec)
+sys.modules["test1"] = test1
+spec.loader.exec_module(test1)
 
+# Maintenant, vous pouvez utiliser les fonctions et classes de test1.py
+polycoef = test1.polycoef
+polynome = test1.polynome
 
-def create_matrix(X, order):
-    matrix = np.ones((X.shape[0], 1))
-    for i in range(1, order + 1):
-        matrix = np.hstack((matrix, X ** i))
-    return matrix
+# Spécifiez le chemin du fichier Excel
+fichier_excel = r"C:\Users\HP\Desktop\prj\test.xlsx"
 
+# Importer le fichier Excel
+df = pd.read_excel(fichier_excel)
 
-def polynomial_regression(X, y, degree):
-    matrix = create_matrix(X, degree)
-    alpha = np.linalg.inv(matrix.T.dot(matrix)).dot(matrix.T).dot(y)
-    return alpha
+# Afficher les premières lignes du fichier pour vérifier l'importation
+print(df.head())
 
+# Transformer le DataFrame en array NumPy
+array_numpy = df[['tempurature', 'effective']].to_numpy()
 
-def predict(X, alpha):
-    matrix = create_matrix(X, len(alpha) - 1)
-    return matrix.dot(alpha)
+# Séparer les catégories et les valeurs
+categories = array_numpy[:, 0]  # Colonne des catégories
+valeurs = array_numpy[:, 1].astype(float)  # Colonne des valeurs (en tant que float)
 
+print(array_numpy)
+print(categories)
+print(valeurs)
 
-order = 10
+# Créer un graphique à bâtons
+plt.stem(categories, valeurs, basefmt=" ", use_line_collection=True, linefmt='b-', markerfmt='bo')
 
-alpha = polynomial_regression(X, y, order)
-print("Model Coefficients:", alpha)
+# Ajouter des annotations pour les valeurs au-dessus de chaque bâton
+for i in range(len(valeurs)):
+    plt.annotate(f'{valeurs[i]:.0f}',  # Valeur sans décimale
+                 xy=(categories[i], valeurs[i]),  # Position du texte au sommet du bâton
+                 xytext=(0, 3),  # Décalage vertical pour que le texte soit au-dessus des bâtons
+                 textcoords="offset points",  # Coordonnées relatives
+                 ha='center', va='bottom', fontsize=10, fontweight='bold')  # Style du texte
 
-X_test = np.linspace(0, 50, 300).reshape(300, 1)
-y_pred = predict(X_test, alpha)
+# Ajouter un titre et des étiquettes avec des polices plus grandes et plus claires
+plt.title('Statistiques par Catégorie (Graphique à Bâtons)', fontsize=16, fontweight='bold')
+plt.xlabel('Température', fontsize=14)
+plt.ylabel('Valeur', fontsize=14)
 
-plt.scatter(X, y)
-plt.plot(X_test, y_pred)
-plt.xlabel('X')
-plt.ylabel('y')
+# Personnaliser les graduations (ticks) des axes
+plt.xticks(fontsize=12, fontweight='bold')
+plt.yticks(fontsize=12)
+
+# Supprimer les bordures superflues pour un style plus épuré
+plt.gca().spines['top'].set_visible(False)
+plt.gca().spines['right'].set_visible(False)
+
+# Afficher une grille légère sur l'axe Y pour améliorer la lisibilité
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+# === Tracer le polynôme ===
+# Ajustement polynomial de degré n
+n = int(input("Taper le degré du polynome n = "))
+poly = polynome(polycoef(categories, valeurs, n))
+
+# Générer des points pour tracer le polynôme lissé
+x_poly = np.linspace(min(categories), max(categories), 500)
+y_poly = poly(x_poly)
+
+# Tracer le polynôme sur le même graphique
+plt.plot(x_poly, y_poly, color='red', linestyle='-', linewidth=2, label=f'Ajustement Polynomial (deg={n})')
+
+# Ajouter une légende pour indiquer la courbe polynomiale
 plt.legend()
+
+# Afficher le graphique final
+plt.tight_layout()
 plt.show()
+
 
 
 
