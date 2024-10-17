@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
+from functions import plot_scatter, plot_stem
 
 
 def tracer_csv(filepath):
@@ -91,7 +92,7 @@ class MainWindow(QWidget):
 
         self.show_btn = QPushButton("Tracer")
         self.show_btn.setMaximumWidth(80)
-        self.show_btn.clicked.connect(lambda: tracer_csv(self.filepath_line.text()))
+        self.show_btn.clicked.connect(lambda: self.plot_csv(self.filepath_line.text()))
         self.form_layout_input.addRow(self.show_btn)
         self.form_layout_input.setAlignment(self.show_btn, Qt.AlignRight)
 
@@ -129,8 +130,14 @@ class MainWindow(QWidget):
     def select_csv(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "CSV Files (*.csv)")
         if file_path != "":
-            self.filepath = file_path
             self.filepath_line.setText(file_path)
+
+    def plot_csv(self, filepath):
+        match self.modes_combo.currentIndex():
+            case 0:
+                plot_scatter(filepath)
+            case 1:
+                plot_stem(filepath)
 
 
 if __name__ == '__main__':
