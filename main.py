@@ -7,16 +7,38 @@ from PyQt5.QtCore import Qt
 
 
 def tracer_csv(filepath):
-    data = pd.read_csv(filepath)
-    x = data['X']
-    y = data['Y']
+    try:
+        # Attempt to read the CSV file with the specified separator
+        data = pd.read_csv(filepath, sep=";")
+        print("Data read successfully.")
+        print(data.head())  # Print the first few rows
 
-    plt.figure()
-    plt.plot(x, y)
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.title("Tracé sans régression")
-    plt.show()
+        # Check if the required columns exist
+        if 'X' not in data.columns or 'Y' not in data.columns:
+            raise ValueError("CSV must contain 'X' and 'Y' columns")
+
+        x = data['X']
+        y = data['Y']
+
+        plt.figure(figsize=(10, 6))  # Set the figure size
+        bar_width = 0.05  # Set the width of the bars (very thin)
+
+        # Create the histogram
+        bars = plt.bar(x, y, width=bar_width, color='b', edgecolor='black')
+
+        # Annotate each bar with the value of X
+        for bar in bars:
+            plt.text(bar.get_x() + bar_width / 2, bar.get_height(),
+                     f'{bar.get_x():.2f}',  # Display the value of X
+                     ha='center', va='bottom')  # Centered above the bar
+
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        plt.title("Histogramme de X et Y")
+        plt.grid(axis='y')
+        plt.show()  # Display the plot
+    except Exception as e:
+        print(f"Error: {e}")  # Print the error message
 
 
 class MainWindow(QWidget):
@@ -61,10 +83,11 @@ class MainWindow(QWidget):
         self.import_layout.addWidget(self.import_btn)
         self.form_layout_input.addRow(self.import_label, self.import_layout)
 
-        self.degre_label = QLabel("Degré:")
-        self.degre_spinB = QSpinBox()
-        self.degre_spinB.setMinimum(2)
-        self.form_layout_input.addRow(self.degre_label, self.degre_spinB)
+        self.mode_label = QLabel("Mode de tracé:")
+        self.modes_combo = QComboBox()
+        self.modes_combo.addItem("Points")
+        self.modes_combo.addItem("Bâtons")
+        self.form_layout_input.addRow(self.mode_label, self.modes_combo)
 
         self.show_btn = QPushButton("Tracer")
         self.show_btn.setMaximumWidth(80)
@@ -83,6 +106,11 @@ class MainWindow(QWidget):
         self.output_group.setLayout(self.form_layout_output)
         self.parameters_layout.addWidget(self.output_group)
 
+        self.degre_label = QLabel("Degré:")
+        self.degre_spinB = QSpinBox()
+        self.degre_spinB.setMinimum(2)
+        self.form_layout_output.addRow(self.degre_label, self.degre_spinB)
+
         self.polynome_label = QLabel("Polynôme:")
         self.polynome_sortie = QPlainTextEdit()
         self.polynome_sortie.setReadOnly(True)
@@ -97,8 +125,6 @@ class MainWindow(QWidget):
 
         self.setLayout(self.main_layout)
 
-
-
     # Méthodes:
     def select_csv(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "CSV Files (*.csv)")
@@ -108,6 +134,7 @@ class MainWindow(QWidget):
 
 
 if __name__ == '__main__':
+    plt.ion()  # Enable interactive mode for Matplotlib
     app = QApplication(sys.argv)
 
     win = MainWindow()
