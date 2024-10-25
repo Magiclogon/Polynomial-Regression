@@ -58,6 +58,8 @@ def plot_poly(filepath, degre):
     plt.legend()
     plt.tight_layout()
     plt.savefig("regression.png")
+    plt.close()
+
     return coeffs
 
 
@@ -95,6 +97,7 @@ def plot_scatter(fichier_csv):
     # Afficher le graphique final
     plt.tight_layout()
     plt.savefig('points_plot.png')
+    plt.close()
 
 
 def plot_stem(path_file):
@@ -145,6 +148,7 @@ def plot_stem(path_file):
         # Afficher le graphique final
         plt.tight_layout()
         plt.savefig('batons_plot.png')
+        plt.close()
 
     except Exception as e:
         print(f"Error while plotting: {e}")

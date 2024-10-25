@@ -131,8 +131,13 @@ class MainWindow(QWidget):
                 self.image_label.setPixmap(QPixmap("batons_plot.png"))
 
     def plot_regression(self, filepath, degre):
-        plot_poly(filepath, degre)
+        coeffs = plot_poly(filepath, degre)
         self.image_label.setPixmap(QPixmap("regression.png"))
+        polynome = ""
+        for i in range(len(coeffs)):
+            polynome = f"{coeffs[i]} x^{i} + " + polynome
+
+        self.polynome_sortie.setPlainText(polynome)
 
 
 if __name__ == '__main__':
