@@ -90,8 +90,7 @@ def plot_scatter(fichier_csv):
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Afficher le graphique final
-    plt.tight_layout()
-    plt.show()
+    plt.savefig('points_plot.png')
 
 
 def plot_stem(path_file):
@@ -141,7 +140,7 @@ def plot_stem(path_file):
 
         # Afficher le graphique final
         plt.tight_layout()
-        plt.show()
+        plt.savefig('batons_plot.png')
 
     except Exception as e:
         print(f"Error while plotting: {e}")
