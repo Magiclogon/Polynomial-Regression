@@ -99,9 +99,16 @@ class MainWindow(QWidget):
         self.spacer3 = QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Maximum)
         self.affichage_layout.addItem(self.spacer3)
 
+        self.vlayout = QVBoxLayout()
+        self.affichage_layout.addLayout(self.vlayout)
+
+        self.vlayout.addItem(self.spacer1)
+
         self.image_label = QLabel(self)
         self.image_label.setScaledContents(True)
-        self.affichage_layout.addWidget(self.image_label)
+        self.vlayout.addWidget(self.image_label)
+
+        self.vlayout.addItem(self.spacer1)
 
         self.affichage_layout.addItem(self.spacer3)
 
