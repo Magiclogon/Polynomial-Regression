@@ -1,6 +1,61 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
+
+
+# Fonction pour calculer les coefficients du polynôme
+def polycoef(X, Y, degre):
+    A = np.vander(X, degre + 1)
+    coeffs, _, _, _ = np.linalg.lstsq(A, Y, rcond=None)
+    return coeffs
+
+# Classe du polynôme
+class Polynome:
+    def __init__(self, coeffs):
+        self.coeffs = coeffs
+
+    def __call__(self, x):
+        y = np.zeros_like(x, dtype=float)
+        for i, c in enumerate(self.coeffs):
+            y += c * np.power(x, len(self.coeffs) - i - 1)
+        return y
+
+# Fonction pour tracer le polynôme de régression
+def plot_poly(filepath, degre):
+    # Importer le fichier CSV
+    df = pd.read_csv(filepath, sep=";")
+
+    # Convertir les colonnes 'X' et 'Y' en numériques, en gérant les erreurs
+    df['X'] = pd.to_numeric(df['X'], errors='coerce')
+    df['Y'] = pd.to_numeric(df['Y'], errors='coerce')
+
+    # Supprimer les lignes contenant des valeurs NaN (résultat des erreurs de conversion)
+    df = df.dropna(subset=['X', 'Y'])
+
+    # Transformer le DataFrame en array NumPy pour les colonnes X et Y
+    array_numpy = df[['X', 'Y']].to_numpy()
+    categories = array_numpy[:, 0]  # Colonne X (par exemple, Température)
+    valeurs = array_numpy[:, 1]  # Colonne Y (par exemple, Effectivité)
+
+    # Tracer l'histogramme existant
+    plt.scatter(categories, valeurs, color='blue', label='Valeurs observées', s=50)
+
+    # Calcul des coefficients du polynôme et création du modèle
+    coeffs = polycoef(categories, valeurs, degre)
+    poly = Polynome(coeffs)
+
+    # Générer les points pour le polynôme
+    x_poly = np.linspace(min(categories), max(categories), 500)
+    y_poly = poly(x_poly)
+
+    # Tracer le polynôme sur le graphique
+    plt.plot(x_poly, y_poly, color='red', linestyle='-', linewidth=2, label=f'Ajustement Polynomial (deg={degre})')
+    plt.title('Statistiques avec Régression Polynomial', fontsize=16, fontweight='bold')
+    plt.xlabel('X', fontsize=14)
+    plt.ylabel('Y', fontsize=14)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
 
 
 # Fonction pour tracer le scatter plot à partir d'un fichier CSV
