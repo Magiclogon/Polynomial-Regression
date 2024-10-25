@@ -56,6 +56,7 @@ def plot_poly(filepath, degre):
     plt.legend()
     plt.tight_layout()
     plt.show()
+    return coeffs
 
 
 # Fonction pour tracer le scatter plot à partir d'un fichier CSV
