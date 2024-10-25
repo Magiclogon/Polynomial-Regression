@@ -2,50 +2,16 @@ import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtCore import Qt
 from functions import plot_scatter, plot_stem
-
-
-def tracer_csv(filepath):
-    try:
-        # Attempt to read the CSV file with the specified separator
-        data = pd.read_csv(filepath, sep=";")
-        print("Data read successfully.")
-        print(data.head())  # Print the first few rows
-
-        # Check if the required columns exist
-        if 'X' not in data.columns or 'Y' not in data.columns:
-            raise ValueError("CSV must contain 'X' and 'Y' columns")
-
-        x = data['X']
-        y = data['Y']
-
-        plt.figure(figsize=(10, 6))  # Set the figure size
-        bar_width = 0.05  # Set the width of the bars (very thin)
-
-        # Create the histogram
-        bars = plt.bar(x, y, width=bar_width, color='b', edgecolor='black')
-
-        # Annotate each bar with the value of X
-        for bar in bars:
-            plt.text(bar.get_x() + bar_width / 2, bar.get_height(),
-                     f'{bar.get_x():.2f}',  # Display the value of X
-                     ha='center', va='bottom')  # Centered above the bar
-
-        plt.xlabel('X')
-        plt.ylabel('Y')
-        plt.title("Histogramme de X et Y")
-        plt.grid(axis='y')
-        plt.show()  # Display the plot
-    except Exception as e:
-        print(f"Error: {e}")  # Print the error message
 
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Régression Polynomiale")
+        self.setMinimumSize(1200, 500)
 
         self.main_layout = QHBoxLayout()
 
@@ -124,6 +90,21 @@ class MainWindow(QWidget):
 
         self.parameters_layout.addItem(self.spacer1)
 
+        # -------------------------------
+        # Plotting Widget
+
+        self.affichage_layout = QHBoxLayout()
+        self.affichage_widget.setLayout(self.affichage_layout)
+
+        self.spacer3 = QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Maximum)
+        self.affichage_layout.addItem(self.spacer3)
+
+        self.image_label = QLabel(self)
+        self.image_label.setScaledContents(True)
+        self.affichage_layout.addWidget(self.image_label)
+
+        self.affichage_layout.addItem(self.spacer3)
+
         self.setLayout(self.main_layout)
 
     # Méthodes:
@@ -136,8 +117,10 @@ class MainWindow(QWidget):
         match self.modes_combo.currentIndex():
             case 0:
                 plot_scatter(filepath)
+                self.image_label.setPixmap(QPixmap("points_plot.png"))
             case 1:
                 plot_stem(filepath)
+                self.image_label.setPixmap(QPixmap("batons_plot.png"))
 
 
 if __name__ == '__main__':
