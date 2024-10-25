@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtCore import Qt
-from functions import plot_scatter, plot_stem
+from functions import plot_scatter, plot_stem, plot_poly
 
 
 class MainWindow(QWidget):
@@ -85,6 +85,7 @@ class MainWindow(QWidget):
         self.form_layout_output.addRow(self.polynome_label, self.polynome_sortie)
 
         self.regression_btn = QPushButton("Tracer")
+        self.regression_btn.clicked.connect(lambda: self.plot_regression(self.filepath_line.text(), self.degre_spinB.value()))
         self.form_layout_output.addRow(self.regression_btn)
         self.form_layout_output.setAlignment(self.regression_btn, Qt.AlignRight)
 
@@ -128,6 +129,10 @@ class MainWindow(QWidget):
             case 1:
                 plot_stem(filepath)
                 self.image_label.setPixmap(QPixmap("batons_plot.png"))
+
+    def plot_regression(self, filepath, degre):
+        plot_poly(filepath, degre)
+        self.image_label.setPixmap(QPixmap("regression.png"))
 
 
 if __name__ == '__main__':

@@ -9,6 +9,7 @@ def polycoef(X, Y, degre):
     coeffs, _, _, _ = np.linalg.lstsq(A, Y, rcond=None)
     return coeffs
 
+
 # Classe du polynôme
 class Polynome:
     def __init__(self, coeffs):
@@ -19,6 +20,7 @@ class Polynome:
         for i, c in enumerate(self.coeffs):
             y += c * np.power(x, len(self.coeffs) - i - 1)
         return y
+
 
 # Fonction pour tracer le polynôme de régression
 def plot_poly(filepath, degre):
@@ -55,7 +57,7 @@ def plot_poly(filepath, degre):
     plt.ylabel('Y', fontsize=14)
     plt.legend()
     plt.tight_layout()
-    plt.show()
+    plt.savefig("regression.png")
     return coeffs
 
 
@@ -91,6 +93,7 @@ def plot_scatter(fichier_csv):
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Afficher le graphique final
+    plt.tight_layout()
     plt.savefig('points_plot.png')
 
 
