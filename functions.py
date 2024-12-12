@@ -61,10 +61,11 @@ def plot_poly(filepath, degre, axes):
     # Tracer le polynôme sur le graphique
     axes.plot(x_poly, y_poly, color='red', linestyle='-', linewidth=2, label=f'Ajustement Polynomial (deg={degre})')
 
-    axes.set_title('Statistiques avec Régression Polynomial', fontsize=16, fontweight='bold')
+    axes.set_title('Régression Polynomial', fontsize=16, fontweight='normal')
     axes.set_xlabel('X', fontsize=14)
     axes.set_ylabel('Y', fontsize=14)
-    axes.legend()
+    legend = axes.legend()
+    legend.set_draggable(True)
 
     axes.figure.tight_layout()
     axes.figure.canvas.draw()
@@ -202,7 +203,8 @@ def polynomial_regression_sklearn(csv_file, degree, axes):
     axes.set_xlabel('X')
     axes.set_ylabel('Y')
     axes.set_title('Polynomial Regression')
-    axes.legend()
+    legend = axes.legend()
+    legend.set_draggable(True)
 
     # Personnaliser les ticks des axes
     axes.tick_params(axis='both', labelsize=12, width=1, length=5)
