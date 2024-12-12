@@ -1,10 +1,9 @@
 import sys
-import pandas as pd
 import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtCore import Qt
-from functions import plot_scatter, plot_stem, plot_poly
+from functions import plot_scatter, plot_stem, plot_poly, polynomial_regression_sklearn
 
 
 class MainWindow(QWidget):
@@ -15,6 +14,61 @@ class MainWindow(QWidget):
 
         self.main_layout = QHBoxLayout()
 
+        self.setStyleSheet("""
+                    QWidget {
+                        background-color: #2b2b2b;
+                        color: #ffffff;
+                        font-family: Arial, Helvetica, sans-serif;
+                    }
+
+                    QGroupBox {
+                        border: 1px solid #555;
+                        border-radius: 5px;
+                        margin-top: 10px;
+                        padding: 10px;
+                    }
+
+                    QGroupBox::title {
+                        subcontrol-origin: margin;
+                        subcontrol-position: top left;
+                        padding: 0 10px;
+                        font-weight: bold;
+                        color: #ffaa00;
+                    }
+
+                    QPushButton {
+                        background-color: #ffaa00;
+                        color: #2b2b2b;
+                        border: none;
+                        padding: 10px;
+                        border-radius: 5px;
+                        font-size: 14px;
+                    }
+
+                    QPushButton:hover {
+                        background-color: #ffcc33;
+                    }
+
+                    QLineEdit, QComboBox, QSpinBox {
+                        background-color: #444;
+                        border: 1px solid #555;
+                        color: #ffffff;
+                        border-radius: 3px;
+                        padding: 5px;
+                    }
+
+                    QLabel {
+                        font-size: 14px;
+                    }
+
+                    QPlainTextEdit {
+                        background-color: #444;
+                        border: 1px solid #555;
+                        color: #ffffff;
+                        border-radius: 3px;
+                    }
+                """)
+
         # Variables
 
         # Ajouter les widgets au main layout.
@@ -22,7 +76,7 @@ class MainWindow(QWidget):
         self.main_layout.addWidget(self.parameters_widget, stretch=1)
 
         self.affichage_widget = QWidget()
-        self.affichage_widget.setStyleSheet("background-color: #d6dadc;")
+        self.affichage_widget.setStyleSheet("background-color: #3b3b3b;")
         self.main_layout.addWidget(self.affichage_widget, stretch=3)
 
         # Remplir le parameters_widget
@@ -72,6 +126,12 @@ class MainWindow(QWidget):
         self.form_layout_output = QFormLayout()
         self.output_group.setLayout(self.form_layout_output)
         self.parameters_layout.addWidget(self.output_group)
+
+        self.regression_meth = QLabel("Méthode utilisée: ")
+        self.meth_comboBox = QComboBox()
+        self.meth_comboBox.addItem("Méthode Calculatoire")
+        self.meth_comboBox.addItem("Machine learning")
+        self.form_layout_output.addRow(self.regression_meth, self.meth_comboBox)
 
         self.degre_label = QLabel("Degré:")
         self.degre_spinB = QSpinBox()
@@ -131,13 +191,24 @@ class MainWindow(QWidget):
                 self.image_label.setPixmap(QPixmap("batons_plot.png"))
 
     def plot_regression(self, filepath, degre):
-        coeffs = plot_poly(filepath, degre)
-        self.image_label.setPixmap(QPixmap("regression.png"))
-        polynome = ""
-        for i in range(len(coeffs)):
-            polynome = f"{coeffs[i]} x^{i} + " + polynome
+        match self.meth_comboBox.currentIndex():
+            case 0:
+                coeffs = plot_poly(filepath, degre)
+                self.image_label.setPixmap(QPixmap("regression.png"))
+                polynome = ""
+                for i in range(len(coeffs)):
+                    polynome = f"{coeffs[i]} x^{i} + " + polynome
 
-        self.polynome_sortie.setPlainText(polynome)
+                self.polynome_sortie.setPlainText(polynome)
+
+            case 1:
+                coeffs = polynomial_regression_sklearn(filepath, degre)
+                self.image_label.setPixmap(QPixmap("regression.png"))
+                polynome = ""
+                for i in range(len(coeffs)):
+                    polynome = f"{coeffs[i]} x^{i} + " + polynome
+
+                self.polynome_sortie.setPlainText(polynome)
 
 
 if __name__ == '__main__':

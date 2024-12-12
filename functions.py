@@ -1,6 +1,11 @@
+import threading
+from turtledemo.penrose import start
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
 
 
 # Fonction pour calculer les coefficients du polynôme
@@ -22,7 +27,7 @@ class Polynome:
         return y
 
 
-# Fonction pour tracer le polynôme de régression
+    # Fonction pour tracer le polynôme de régression
 def plot_poly(filepath, degre):
     # Importer le fichier CSV
     df = pd.read_csv(filepath, sep=";")
@@ -100,6 +105,7 @@ def plot_scatter(fichier_csv):
     plt.close()
 
 
+# Fonction pour tracer le plit en barre.
 def plot_stem(path_file):
     try:
         # Importer le fichier CSV
@@ -152,6 +158,53 @@ def plot_stem(path_file):
 
     except Exception as e:
         print(f"Error while plotting: {e}")
+
+
+def polynomial_regression_sklearn(csv_file, degree):
+
+    # Avoir les données
+    data = pd.read_csv(csv_file, sep=";")
+    X = data[['X']].values
+    Y = data['Y'].values
+
+    # Create polynomial features
+    poly = PolynomialFeatures(degree=degree)
+    X_poly = poly.fit_transform(X)
+
+    # Configurer la regression
+    model = LinearRegression()
+    model.fit(X_poly, Y)
+
+    # Afficher les coeffs
+    print(f"Polynomial Coefficients: {model.coef_}")
+    print(f"Intercept: {model.intercept_}")
+
+    # Plot the data points
+    plt.scatter(X, Y, color='blue', label='Data Points')
+
+    # Generer prédictions
+    X_plot = np.linspace(min(X), max(X), 100).reshape(-1, 1)
+    Y_plot = model.predict(poly.transform(X_plot))
+
+    # Tracer la courbe
+    plt.plot(X_plot, Y_plot, color='red', label=f'Polynomial Fit (Degree {degree})')
+
+    # Personnaliser
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title('Polynomial Regression')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig("regression.png")
+    plt.close()
+
+    coeffs = []
+    coeffs = coeffs + model.coef_.tolist() + [model.intercept_]
+    # Retourner les coefficients et l'intercept
+    return coeffs
+
+
+
 
 
 
