@@ -22,7 +22,7 @@ class MainWindow(QWidget):
                     }
 
                     QGroupBox {
-                        border: 1px solid #555;
+                        border: 2px solid #555;
                         border-radius: 5px;
                         margin-top: 10px;
                         padding: 10px;
@@ -40,7 +40,7 @@ class MainWindow(QWidget):
                         background-color: #ffaa00;
                         color: #2b2b2b;
                         border: none;
-                        padding: 10px;
+                        padding: 8px;
                         border-radius: 5px;
                         font-size: 14px;
                     }
@@ -55,6 +55,7 @@ class MainWindow(QWidget):
                         color: #ffffff;
                         border-radius: 3px;
                         padding: 5px;
+                        font-size: 12px;
                     }
 
                     QLabel {
@@ -66,6 +67,7 @@ class MainWindow(QWidget):
                         border: 1px solid #555;
                         color: #ffffff;
                         border-radius: 3px;
+                        font-size: 11px;
                     }
                 """)
 
