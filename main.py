@@ -1,10 +1,20 @@
 import sys
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.figure import Figure
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtCore import Qt
 from functions import plot_scatter, plot_stem, plot_poly, polynomial_regression_sklearn
 
+class MplCanvas(FigureCanvas):
+    def __init__(self, parent=None, width=5, height=4, dpi=120):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        super(MplCanvas, self).__init__(fig)
+        fig.tight_layout()
+
+plt.style.use('dark_background')
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -112,6 +122,11 @@ class MainWindow(QWidget):
         self.modes_combo.addItem("Bâtons")
         self.form_layout_input.addRow(self.mode_label, self.modes_combo)
 
+        self.erreur_fichier_label = QLabel("Nous n'avez importé aucun fichier!")
+        self.erreur_fichier_label.setStyleSheet("background-color: #DD3D39;")
+        self.erreur_fichier_label.hide()
+        self.form_layout_input.addRow(self.erreur_fichier_label)
+
         self.show_btn = QPushButton("Tracer")
         self.show_btn.setMaximumWidth(80)
         self.show_btn.clicked.connect(lambda: self.plot_csv(self.filepath_line.text()))
@@ -146,6 +161,12 @@ class MainWindow(QWidget):
         self.polynome_sortie.setMaximumHeight(70)
         self.form_layout_output.addRow(self.polynome_label, self.polynome_sortie)
 
+        # Message d'erreur
+        self.erreur_fichier_label2 = QLabel("Nous n'avez importé aucun fichier!")
+        self.erreur_fichier_label2.setStyleSheet("background-color: #DD3D39;")
+        self.erreur_fichier_label2.hide()
+        self.form_layout_output.addRow(self.erreur_fichier_label2)
+
         self.regression_btn = QPushButton("Tracer")
         self.regression_btn.clicked.connect(lambda: self.plot_regression(self.filepath_line.text(), self.degre_spinB.value()))
         self.form_layout_output.addRow(self.regression_btn)
@@ -167,12 +188,12 @@ class MainWindow(QWidget):
 
         self.vlayout.addItem(self.spacer1)
 
-        self.image_label = QLabel(self)
-        self.image_label.setScaledContents(True)
-        self.vlayout.addWidget(self.image_label)
+        self.canv = MplCanvas(self)
+        self.toolbar = NavigationToolbar(self.canv, self)
+        self.vlayout.addWidget(self.toolbar)
+        self.vlayout.addWidget(self.canv)
 
         self.vlayout.addItem(self.spacer1)
-
         self.affichage_layout.addItem(self.spacer3)
 
         self.setLayout(self.main_layout)
@@ -184,33 +205,45 @@ class MainWindow(QWidget):
             self.filepath_line.setText(file_path)
 
     def plot_csv(self, filepath):
-        match self.modes_combo.currentIndex():
-            case 0:
-                plot_scatter(filepath)
-                self.image_label.setPixmap(QPixmap("points_plot.png"))
-            case 1:
-                plot_stem(filepath)
-                self.image_label.setPixmap(QPixmap("batons_plot.png"))
+        if filepath != "":
+            self.erreur_fichier_label.hide()
+            self.erreur_fichier_label2.hide()
+            plt.style.use('dark_background')
+            self.canv.axes.clear()
+            match self.modes_combo.currentIndex():
+                case 0:
+                    plot_scatter(filepath, self.canv.axes)
+                case 1:
+                    plot_stem(filepath, self.canv.axes)
+            self.canv.figure.tight_layout()
+            self.canv.draw()
+
+        else:
+            self.erreur_fichier_label.show()
 
     def plot_regression(self, filepath, degre):
-        match self.meth_comboBox.currentIndex():
-            case 0:
-                coeffs = plot_poly(filepath, degre)
-                self.image_label.setPixmap(QPixmap("regression.png"))
-                polynome = ""
-                for i in range(len(coeffs)):
-                    polynome = f"{coeffs[i]} x^{i} + " + polynome
+        if filepath != "":
+            self.erreur_fichier_label.hide()
+            self.erreur_fichier_label2.hide()
+            plt.style.use('dark_background')
+            self.canv.axes.clear()
+            match self.meth_comboBox.currentIndex():
+                case 0:
+                    coeffs = plot_poly(filepath, degre, self.canv.axes)
 
-                self.polynome_sortie.setPlainText(polynome)
+                case 1:
+                    coeffs = polynomial_regression_sklearn(filepath, degre, self.canv.axes)
 
-            case 1:
-                coeffs = polynomial_regression_sklearn(filepath, degre)
-                self.image_label.setPixmap(QPixmap("regression.png"))
-                polynome = ""
-                for i in range(len(coeffs)):
-                    polynome = f"{coeffs[i]} x^{i} + " + polynome
+            polynome = ""
+            for i in range(len(coeffs)):
+                polynome = f"{coeffs[i]} x^{i} + " + polynome
 
-                self.polynome_sortie.setPlainText(polynome)
+            self.polynome_sortie.setPlainText(polynome)
+            self.canv.figure.tight_layout()
+            self.canv.draw()
+
+        else:
+            self.erreur_fichier_label2.show()
 
 
 if __name__ == '__main__':
