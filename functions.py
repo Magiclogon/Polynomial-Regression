@@ -1,5 +1,4 @@
-import threading
-from turtledemo.penrose import start
+import os
 
 import numpy as np
 import pandas as pd
@@ -30,7 +29,14 @@ class Polynome:
 # Fonction pour tracer le polynôme de régression
 def plot_poly(filepath, degre, axes):
     # Importer le fichier CSV
-    df = pd.read_csv(filepath, sep=";")
+    file_extension = os.path.splitext(filepath)[1].lower()
+
+    if file_extension == '.csv':
+        df = pd.read_csv(filepath, sep=";")
+    elif file_extension in ['.xls', '.xlsx']:
+        df = pd.read_excel(filepath)
+    else:
+        raise ValueError("Format de fichier non pris en charge. Utilisez un fichier CSV ou Excel (.xls/.xlsx).")
 
     # Convertir les colonnes 'X' et 'Y' en numériques, en gérant les erreurs
     df['X'] = pd.to_numeric(df['X'], errors='coerce')
@@ -76,7 +82,14 @@ def plot_poly(filepath, degre, axes):
 # Fonction pour tracer le scatter plot à partir d'un fichier CSV
 def plot_scatter(fichier_csv, axes):
     # Importer le fichier CSV
-    df = pd.read_csv(fichier_csv, sep=";")
+    file_extension = os.path.splitext(fichier_csv)[1].lower()
+
+    if file_extension == '.csv':
+        df = pd.read_csv(fichier_csv, sep=";")
+    elif file_extension in ['.xls', '.xlsx']:
+        df = pd.read_excel(fichier_csv)
+    else:
+        raise ValueError("Format de fichier non pris en charge. Utilisez un fichier CSV ou Excel (.xls/.xlsx).")
 
     # Transformer le DataFrame en array NumPy pour les colonnes X et Y
     array_numpy = df[['X', 'Y']].to_numpy()
@@ -92,9 +105,9 @@ def plot_scatter(fichier_csv, axes):
     axes.scatter(categories, valeurs, color='blue', label='Valeurs observées', s=30)  # s est la taille des points
 
     # Ajouter un titre et des étiquettes avec des polices plus grandes et plus claires
-    axes.set_title('Histogramme de X et Y ', fontsize=16, fontweight='bold')
-    axes.set_xlabel('X (Variable)', fontsize=14)
-    axes.set_ylabel('Y (Effectif)', fontsize=14)
+    axes.set_title('Histogramme ', fontsize=16, fontweight='bold')
+    axes.set_xlabel('X', fontsize=14)
+    axes.set_ylabel('Y', fontsize=14)
 
     # Personnaliser les graduations (ticks) des axes
     axes.tick_params(axis='both', labelsize=12)
@@ -114,7 +127,14 @@ def plot_scatter(fichier_csv, axes):
 def plot_stem(path_file, axes):
     try:
         # Importer le fichier CSV
-        df = pd.read_csv(path_file, sep=";")
+        file_extension = os.path.splitext(path_file)[1].lower()
+
+        if file_extension == '.csv':
+            df = pd.read_csv(path_file, sep=";")
+        elif file_extension in ['.xls', '.xlsx']:
+            df = pd.read_excel(path_file)
+        else:
+            raise ValueError("Format de fichier non pris en charge. Utilisez un fichier CSV ou Excel (.xls/.xlsx).")
 
         # Transformer le DataFrame en array NumPy pour les colonnes X et Y
         array_numpy = df[['X', 'Y']].to_numpy()
@@ -144,9 +164,9 @@ def plot_stem(path_file, axes):
                          ha='center', va='bottom', fontsize=10, fontweight='bold')  # Style du texte
 
         # Ajouter un titre et des étiquettes
-        axes.set_title('Histogramme de X et Y ', fontsize=16, fontweight='bold')
-        axes.set_xlabel('X (Variable)', fontsize=14)
-        axes.set_ylabel('Y (Effectif)', fontsize=14)
+        axes.set_title('Histogramme', fontsize=16, fontweight='bold')
+        axes.set_xlabel('X', fontsize=14)
+        axes.set_ylabel('Y', fontsize=14)
 
         # Personnaliser les graduations (ticks) des axes
         axes.tick_params(axis='x', labelsize=12, width=1, length=5)
@@ -170,7 +190,16 @@ def plot_stem(path_file, axes):
 def polynomial_regression_sklearn(csv_file, degree, axes):
 
     # Avoir les données
-    data = pd.read_csv(csv_file, sep=";")
+    file_extension = os.path.splitext(csv_file)[1].lower()
+
+    if file_extension == '.csv':
+        data = pd.read_csv(csv_file, sep=";")
+    elif file_extension in ['.xls', '.xlsx']:
+        data = pd.read_excel(csv_file)
+    else:
+        raise ValueError("Format de fichier non pris en charge. Utilisez un fichier CSV ou Excel (.xls/.xlsx).")
+
+
     X = data[['X']].values
     Y = data['Y'].values
 
@@ -202,7 +231,7 @@ def polynomial_regression_sklearn(csv_file, degree, axes):
     # Personnaliser
     axes.set_xlabel('X')
     axes.set_ylabel('Y')
-    axes.set_title('Polynomial Regression')
+    axes.set_title('Polynomial Regression (Machine learning)')
     legend = axes.legend()
     legend.set_draggable(True)
 
@@ -217,12 +246,5 @@ def polynomial_regression_sklearn(csv_file, degree, axes):
     axes.figure.canvas.draw()
 
     coeffs = model.coef_.tolist() + [model.intercept_]
-    # Retourner les coefficients et l'intercept
     return coeffs
-
-
-
-
-
-
 

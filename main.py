@@ -16,6 +16,74 @@ class MplCanvas(FigureCanvas):
 
 plt.style.use('dark_background')
 
+class IntroWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Regression polynomiale")
+        self.setMinimumSize(700, 500)
+        self.init_ui()
+
+        self.setStyleSheet("""
+                            QWidget {
+                                background-color: #2b2b2b;
+                                color: #ffffff;
+                                font-family: Arial, Helvetica, sans-serif;
+                            }
+
+                            QPushButton {
+                                background-color: #ffaa00;
+                                color: #2b2b2b;
+                                border: none;
+                                padding: 8px;
+                                border-radius: 5px;
+                                font-size: 14px;
+                            }
+
+                            QPushButton:hover {
+                                background-color: #ffcc33;
+                            }
+
+                            QLabel {
+                                font-size: 20px;
+                            }
+
+                        """)
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+        h_layout = QHBoxLayout()
+
+        info_label = QLabel("""
+            <h2>Groupe du projet</h2>
+            <p><b>Titre du projet:</b> Regression polynomiale</p>
+            <p><b>Membres du groupe:</b></p>
+            <ul>
+                <li>Walid HOUSNI</li>
+                <li>Hamza EL FELLAH</li>
+            </ul>
+            <p><b>Génie Informatique</p></b>
+            <p><b>Promotion première année</p></b>
+        """)
+        info_label.setTextFormat(Qt.RichText)
+
+        spacerh = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        h_layout.addItem(spacerh)
+        h_layout.addWidget(info_label)
+        h_layout.addItem(spacerh)
+
+        layout.addLayout(h_layout)
+
+        self.launch_btn = QPushButton("Lancer l'application")
+        self.launch_btn.clicked.connect(self.launch_main_window)
+        layout.addWidget(self.launch_btn)
+
+        self.setLayout(layout)
+
+    def launch_main_window(self):
+        self.main_window = MainWindow()
+        self.main_window.show()
+        self.close()
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -85,11 +153,11 @@ class MainWindow(QWidget):
 
         # Ajouter les widgets au main layout.
         self.parameters_widget = QWidget()
-        self.main_layout.addWidget(self.parameters_widget, stretch=1)
+        self.main_layout.addWidget(self.parameters_widget, stretch=17)
 
         self.affichage_widget = QWidget()
         self.affichage_widget.setStyleSheet("background-color: #3b3b3b;")
-        self.main_layout.addWidget(self.affichage_widget, stretch=3)
+        self.main_layout.addWidget(self.affichage_widget, stretch=45)
 
         # Remplir le parameters_widget
 
@@ -122,7 +190,7 @@ class MainWindow(QWidget):
         self.modes_combo.addItem("Bâtons")
         self.form_layout_input.addRow(self.mode_label, self.modes_combo)
 
-        self.erreur_fichier_label = QLabel("Nous n'avez importé aucun fichier!")
+        self.erreur_fichier_label = QLabel()
         self.erreur_fichier_label.setStyleSheet("background-color: #DD3D39;")
         self.erreur_fichier_label.hide()
         self.form_layout_input.addRow(self.erreur_fichier_label)
@@ -158,7 +226,7 @@ class MainWindow(QWidget):
         self.polynome_label = QLabel("Polynôme:")
         self.polynome_sortie = QPlainTextEdit()
         self.polynome_sortie.setReadOnly(True)
-        self.polynome_sortie.setMaximumHeight(70)
+        self.polynome_sortie.setMaximumHeight(90)
         self.form_layout_output.addRow(self.polynome_label, self.polynome_sortie)
 
         # Message d'erreur
@@ -200,7 +268,7 @@ class MainWindow(QWidget):
 
     # Méthodes:
     def select_csv(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "CSV Files (*.csv)")
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", "Fichiers excel (*.csv *xlsx)")
         if file_path != "":
             self.filepath_line.setText(file_path)
 
@@ -210,15 +278,23 @@ class MainWindow(QWidget):
             self.erreur_fichier_label2.hide()
             plt.style.use('dark_background')
             self.canv.axes.clear()
-            match self.modes_combo.currentIndex():
-                case 0:
-                    plot_scatter(filepath, self.canv.axes)
-                case 1:
-                    plot_stem(filepath, self.canv.axes)
-            self.canv.figure.tight_layout()
-            self.canv.draw()
+
+            try:
+                match self.modes_combo.currentIndex():
+                    case 0:
+                        plot_scatter(filepath, self.canv.axes)
+                    case 1:
+                        plot_stem(filepath, self.canv.axes)
+
+                self.canv.figure.tight_layout()
+                self.canv.draw()
+
+            except:
+                self.erreur_fichier_label.setText("Utiliser séparateur ';' pour CSV et le point comme virgule.")
+                self.erreur_fichier_label.show()
 
         else:
+            self.erreur_fichier_label.setText("Nous n'avez importé aucun fichier!")
             self.erreur_fichier_label.show()
 
     def plot_regression(self, filepath, degre):
@@ -227,30 +303,38 @@ class MainWindow(QWidget):
             self.erreur_fichier_label2.hide()
             plt.style.use('dark_background')
             self.canv.axes.clear()
-            match self.meth_comboBox.currentIndex():
-                case 0:
-                    coeffs = plot_poly(filepath, degre, self.canv.axes)
 
-                case 1:
-                    coeffs = polynomial_regression_sklearn(filepath, degre, self.canv.axes)
+            try:
+                match self.meth_comboBox.currentIndex():
 
-            polynome = ""
-            for i in range(len(coeffs)):
-                polynome = f"{coeffs[i]} x^{i} + " + polynome
+                    case 0:
+                        coeffs = plot_poly(filepath, degre, self.canv.axes)
 
-            self.polynome_sortie.setPlainText(polynome)
-            self.canv.figure.tight_layout()
-            self.canv.draw()
+                    case 1:
+                        coeffs = polynomial_regression_sklearn(filepath, degre, self.canv.axes)
+
+                polynome = ""
+                for i in range(len(coeffs)):
+                    polynome = f"{coeffs[i]} x^{i} + " + polynome
+
+                self.polynome_sortie.setPlainText(polynome)
+                self.canv.figure.tight_layout()
+                self.canv.draw()
+
+            except:
+                self.erreur_fichier_label2.setText("Utiliser séparateur ';' pour CSV et le point comme virgule.")
+                self.erreur_fichier_label2.show()
 
         else:
+            self.erreur_fichier_label2.setText("Nous n'avez importé aucun fichier!")
             self.erreur_fichier_label2.show()
 
 
 if __name__ == '__main__':
-    plt.ion()  # Enable interactive mode for Matplotlib
+    plt.ion()
     app = QApplication(sys.argv)
 
-    win = MainWindow()
+    win = IntroWindow()
     win.show()
 
     sys.exit(app.exec_())
